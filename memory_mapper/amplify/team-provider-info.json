@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-memorymaper-dev-3d6f1-authRole",
+      "UnauthRoleArn": "arn:aws:iam::539358811184:role/amplify-memorymaper-dev-3d6f1-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::539358811184:role/amplify-memorymaper-dev-3d6f1-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-memorymaper-dev-3d6f1-deployment",
+      "UnauthRoleName": "amplify-memorymaper-dev-3d6f1-unauthRole",
+      "StackName": "amplify-memorymaper-dev-3d6f1",
+      "StackId": "arn:aws:cloudformation:us-east-1:539358811184:stack/amplify-memorymaper-dev-3d6f1/f45d1da0-c628-11f0-a012-0affc70b2717",
+      "AmplifyAppId": "d243s1ruuaqor9"
+    },
+    "categories": {
+      "auth": {
+        "memorymaperdc590217": {}
+      }
+    }
+  }
+}
