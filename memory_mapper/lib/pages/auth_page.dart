@@ -1,50 +1,49 @@
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
-import 'package:flutter/material.dart';
+import 'package:amplify_authenticator/amplify_authenticator.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:flutter/material.dart';
+
+import '../amplifyconfiguration.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const AuthPage());
 }
-class MyApp extends StatelessWidget {
+
+class AuthPage extends StatefulWidget {
+  const AuthPage({super.key});
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(),
-    );
-  }
+  State<AuthPage> createState() => _AuthPage();
 }
-class MyHomePage extends StatefulWidget {
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-class _MyHomePageState extends State<MyHomePage> {
+
+class _AuthPage extends State<AuthPage> {
   @override
   void initState() {
     super.initState();
     _configureAmplify();
   }
+
   void _configureAmplify() async {
-    final authPlugin = AmplifyAuthCognito();
-    Amplify.addPlugin(authPlugin);
     try {
+      await Amplify.addPlugin(AmplifyAuthCognito());
       await Amplify.configure(amplifyconfig);
-      print('Amplify configured successfully');
+      safePrint('Successfully configured');
     } on Exception catch (e) {
-      print('Error configuring Amplify: $e');
+      safePrint('Error configuring Amplify: $e');
     }
   }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Amplify Cognito with Flutter'),
-      ),
-      body: Center(
-        child: Authenticator(), // Using Authenticator Widget for UI
+    return Authenticator(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        builder: Authenticator.builder(),
+        home: const Scaffold(
+          body: Center(
+            child: Text('You are logged in!'),
+          ),
+        ),
       ),
     );
   }
