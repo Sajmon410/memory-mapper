@@ -10,6 +10,18 @@ void main() async {
   runApp(const MyApp());
 }
 
+void _configureAmplify() async{
+  if(!Amplify.isConfigured){
+    try{
+      await Amplify.addPlugin(AmplifyAuthCognito());
+      await Amplify.configure(amplifyconfig);
+      safePrint('Succesfully Configured.');
+    } on Exception catch (e){
+      safePrint('Error Configuring Amplify: $e');
+    }
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 

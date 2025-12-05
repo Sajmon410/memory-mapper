@@ -4,6 +4,7 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 
 import '../amplifyconfiguration.dart';
+import 'map_screen.dart';
 
 void main() {
   runApp(const AuthPage());
@@ -39,12 +40,8 @@ class _AuthPage extends State<AuthPage> {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         builder: Authenticator.builder(),
-        home: const Scaffold(
-          body: Center(
-            child: Text('You are logged in!'),
+        home: const MapScreen()
           ),
-        ),
-      ),
-    );
+        );
   }
 }
