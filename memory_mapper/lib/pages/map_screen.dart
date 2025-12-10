@@ -35,7 +35,6 @@ class MapScreen extends StatefulWidget{
       initialCameraPosition:  CameraPosition(
         target: _currentLatLng!,
         zoom: 15),
-    onMapCreated: (controller) => _mapController = controller,
     myLocationEnabled: true,
     myLocationButtonEnabled: true,
     ),
