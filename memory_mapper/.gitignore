@@ -22,6 +22,7 @@ migrate_working_dir/
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
 #.vscode/
+*.xcconfig
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -68,3 +69,4 @@ amplifytools.xcconfig
 
 # .gitignore file
 .env
+

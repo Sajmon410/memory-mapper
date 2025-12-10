@@ -2,8 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>App koristi vašu lokaciju da bi prikazala mapu i podatke.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>App koristi vašu lokaciju da bi prikazala mapu i podatke.</string>
 	<key>GMSApiKey</key>
-	<string>AIzaSyD5WDozk33MUuwWDY_gE4gs5yJ7lKl6-tI</string>
+	<string>$(GMS_API_KEY)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

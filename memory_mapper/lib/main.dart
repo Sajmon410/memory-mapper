@@ -3,24 +3,26 @@ import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'amplifyconfiguration.dart';
 import 'pages/auth_page.dart';
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Amplify.addPlugin(AmplifyAuthCognito());
-  await Amplify.configure(amplifyconfig);
-  runApp(const MyApp());
-}
 
-void _configureAmplify() async{
-  if(!Amplify.isConfigured){
-    try{
+Future<void> _configureAmplify() async {
+  if (!Amplify.isConfigured) {
+    try {
       await Amplify.addPlugin(AmplifyAuthCognito());
       await Amplify.configure(amplifyconfig);
-      safePrint('Succesfully Configured.');
-    } on Exception catch (e){
+      safePrint('Successfully Configured.');
+    } on Exception catch (e) {
       safePrint('Error Configuring Amplify: $e');
     }
   }
 }
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await _configureAmplify();
+  runApp(const MyApp());
+}
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
