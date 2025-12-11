@@ -28,7 +28,7 @@ class MapScreen extends StatefulWidget{
   @override
   Widget build(BuildContext context){
   return Scaffold(
-    appBar: AppBar(title: const Text("Memory Mapper")),
+    appBar: AppBar(title: const Text("Memory Mapper"),backgroundColor: Colors.deepPurpleAccent),
     body: _currentLatLng == null
     ? const Center(child:CircularProgressIndicator())
     :GoogleMap(
