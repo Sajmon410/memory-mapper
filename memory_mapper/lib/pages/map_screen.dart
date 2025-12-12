@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
 
 class MapScreen extends StatefulWidget{
   const MapScreen({super.key});
@@ -11,11 +12,13 @@ class MapScreen extends StatefulWidget{
     GoogleMapController? _mapController;
     Location location = Location();
     LatLng? _currentLatLng;
+    String? _userName;
 
     @override
     void initState(){
       super.initState();
       _getCurrentLocation();
+      _getCurrentUser();
     }
 
     Future<void> _getCurrentLocation() async {
@@ -25,10 +28,44 @@ class MapScreen extends StatefulWidget{
       });
     }
 
+    Future<void> _getCurrentUser() async{
+      try{
+        final attributes = await Amplify.Auth.fetchUserAttributes();
+        final nameAttr = attributes.firstWhere(
+          (attr)=> attr.userAttributeKey.key == 'name',
+          orElse:()=> const AuthUserAttribute(userAttributeKey: CognitoUserAttributeKey.name, value: 'Unknown')
+        );
+        setState(() {
+          _userName = nameAttr.value;
+        });
+      } catch(e){
+        safePrint('Error fetching user: $e');
+      }
+    }
+
+    Future<void> _signOut() async {
+        try{
+          final result = await Amplify.Auth.signOut();
+          
+        }
+    }
+
   @override
   Widget build(BuildContext context){
   return Scaffold(
-    appBar: AppBar(title: const Text("Memory Mapper"),backgroundColor: Colors.deepPurpleAccent),
+    appBar: AppBar(
+      title: Text("Welcome $_userName!",
+      style: const TextStyle(color: Colors.white),
+      ),
+      backgroundColor: Colors.deepPurpleAccent,
+      actions: [
+        IconButton(icon: Icon(Icons.logout),
+        onPressed: (){
+          _signOut();
+        },tooltip:'Logout'
+        ),
+      ],
+      ),
     body: _currentLatLng == null
     ? const Center(child:CircularProgressIndicator())
     :GoogleMap(
