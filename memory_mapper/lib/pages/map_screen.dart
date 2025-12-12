@@ -1,3 +1,4 @@
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -46,7 +47,13 @@ class MapScreen extends StatefulWidget{
     Future<void> _signOut() async {
         try{
           final result = await Amplify.Auth.signOut();
-          
+          if(result is CognitoCompleteSignOut){
+            safePrint('Sign out is completet succesfully!');
+          } else if (result is CognitoFailedSignOut){
+            safePrint("Error signing user out: ${result.exception.message}");
+          }
+        } on AuthException catch(e){
+          safePrint('Error signing out: ');
         }
     }
 
