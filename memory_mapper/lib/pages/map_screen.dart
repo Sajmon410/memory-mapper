@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 
@@ -14,6 +17,8 @@ class MapScreen extends StatefulWidget{
     Location location = Location();
     LatLng? _currentLatLng;
     String? _userName;
+    File? image;
+    final picker = ImagePicker();
 
     @override
     void initState(){
@@ -57,6 +62,10 @@ class MapScreen extends StatefulWidget{
         }
     }
 
+    Future<void> pickImage(ImageSource source) async {
+      final pickedFile = await picker.pickImage(source: source);
+    }
+
   @override
   Widget build(BuildContext context){
   return Scaffold(
@@ -67,6 +76,7 @@ class MapScreen extends StatefulWidget{
       backgroundColor: Colors.deepPurpleAccent,
       actions: [
         IconButton(icon: Icon(Icons.logout),
+        color: Colors.white,
         onPressed: (){
           _signOut();
         },tooltip:'Logout'
@@ -80,8 +90,15 @@ class MapScreen extends StatefulWidget{
         target: _currentLatLng!,
         zoom: 15),
     myLocationEnabled: true,
-    myLocationButtonEnabled: true,
+    myLocationButtonEnabled: false,
     ),
+    floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    floatingActionButton: FloatingActionButton(
+      onPressed: ()=> pickImage(ImageSource.camera),
+      child: Icon(Icons.camera_alt),
+      backgroundColor: Colors.deepPurple,
+      foregroundColor:  Colors.white,
+      ),
   );
   }
 }

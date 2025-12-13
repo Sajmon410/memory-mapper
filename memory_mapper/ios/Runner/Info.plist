@@ -2,10 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to take photos.</string>
+	
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>App koristi vašu lokaciju da bi prikazala mapu i podatke.</string>
+	<string>App uses your location to show map and data.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>App koristi vašu lokaciju da bi prikazala mapu i podatke.</string>
+	<string>App uses your location to show map and data.</string>
 	<key>GMSApiKey</key>
 	<string>$(GMS_API_KEY)</string>
 	<key>CFBundleDevelopmentRegion</key>
