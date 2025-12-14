@@ -58,7 +58,7 @@ class MapScreen extends StatefulWidget{
             safePrint("Error signing user out: ${result.exception.message}");
           }
         } on AuthException catch(e){
-          safePrint('Error signing out: ');
+          safePrint('Error signing out: $e');
         }
     }
 
