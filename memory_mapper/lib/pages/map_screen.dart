@@ -64,6 +64,23 @@ class MapScreen extends StatefulWidget{
 
     Future<void> pickImage(ImageSource source) async {
       final pickedFile = await picker.pickImage(source: source);
+
+      if(pickedFile != null){
+        final file = AWSFile.fromPath(pickedFile.path);
+
+        try{
+          final result = await Amplify.Storage.uploadFile(
+            localFile: file, 
+            key: 'photos/${DateTime.now().millisecondsSinceEpoch}.jpg',
+            );
+            print("Uploaded: ");
+        } catch (e) {
+          print("Error $e");
+        };
+      
+      } else {
+        print("No img selected");
+      }
     }
 
   @override

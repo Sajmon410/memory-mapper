@@ -1,0 +1,14 @@
+{
+  "resourceName": "userPhotos",
+  "policyUUID": "756bda9f",
+  "bucketName": "memory-mapper-photos",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}
