@@ -82,6 +82,17 @@ class MapScreen extends StatefulWidget{
         print("No img selected");
       }
     }
+    Future<void> listFiles() async {
+      try{
+        final operation = Amplify.Storage.list();
+        final result = await operation.result;
+        for (var item in result.items){
+          safePrint('Found file: ${item.key}');
+        }
+      } catch (e){
+        safePrint('Error loading files $e');
+      }
+    }
 
   @override
   Widget build(BuildContext context){
