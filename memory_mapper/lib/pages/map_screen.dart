@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
@@ -13,6 +14,7 @@ class MapScreen extends StatefulWidget{
   State<MapScreen> createState() => _MapScreenState();
   }
   class _MapScreenState extends State<MapScreen> {
+    Set<Marker> _markers = {};
     GoogleMapController? _mapController;
     Location location = Location();
     LatLng? _currentLatLng;
@@ -25,6 +27,7 @@ class MapScreen extends StatefulWidget{
       super.initState();
       _getCurrentLocation();
       _getCurrentUser();
+      _loadPins();
     }
 
     Future<void> _getCurrentLocation() async {
@@ -62,37 +65,118 @@ class MapScreen extends StatefulWidget{
         }
     }
 
-    Future<void> pickImage(ImageSource source) async {
-      final pickedFile = await picker.pickImage(source: source);
-
-      if(pickedFile != null){
-        final file = AWSFile.fromPath(pickedFile.path);
-
-        try{
-          final result = await Amplify.Storage.uploadFile(
-            localFile: file, 
-            key: 'photos/${DateTime.now().millisecondsSinceEpoch}.jpg',
-            );
-            print("Uploaded: ");
-        } catch (e) {
-          print("Error $e");
-        };
-      
-      } else {
-        print("No img selected");
-      }
-    }
-    Future<void> listFiles() async {
-      try{
-        final operation = Amplify.Storage.list();
-        final result = await operation.result;
-        for (var item in result.items){
-          safePrint('Found file: ${item.key}');
+    Future<void> _loadPins() async {
+ 
+    final request = GraphQLRequest<String>(
+      document: '''
+        query ListPins {
+          listPins {
+            items {
+              id
+              lat
+              lng
+              s3Key
+              createdAt
+            }
+          }
         }
-      } catch (e){
-        safePrint('Error loading files $e');
+      ''',
+    );
+
+    final resp = await Amplify.API.query(request: request).response;
+
+    if (resp.data != null) {
+      final Map<String, dynamic> data = jsonDecode(resp.data!);
+      final List pins = data['listPins']['items'] as List;
+
+    setState(() {
+  _markers.add(
+    Marker(
+      markerId: MarkerId(key),
+      position: _currentLatLng!,
+      infoWindow: InfoWindow(
+        title: 'Photo Pin',
+        snippet: DateTime.now().toIso8601String(),
+        onTap: () async {
+          final urlResult = await Amplify.Storage.getUrl(key: key).result;
+          showModalBottomSheet(
+            context: context,
+            builder: (_) => Image.network(urlResult.url.toString()),
+          );
+        },
+      ),
+    ),
+  );
+  
+});
+   
+
+
+
+    Future<void> createPinWithPhoto(ImageSource source) async {
+      final pickedFile = await picker.pickImage(source: source);
+      if(pickedFile == null || _currentLatLng == null) return;
+      
+      final file = AWSFile.fromPath(pickedFile.path);
+      final key = 'photos/${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      //upload
+      await Amplify.Storage.uploadFile(localFile: file,key: key);
+
+    final request = GraphQLRequest<String>(
+      document: '''
+       mutation CreatePin(\$input: CreatePinInput!){
+       createPin(input: \$input){ id}
+        }
+      ''',
+      variables: {
+        'input':{
+          'lat': _currentLatLng!.latitude,
+          'lng': _currentLatLng!.longitude,
+          's3Key': key,
+          'createdAt': DateTime.now().toIso8601String()
+        }
       }
+    );
+    await Amplify.API.mutate(request:   request).response;  
+
+    //refres pins
+    await _loadPins();
     }
+
+    // Future<void> pickImage(ImageSource source) async {
+    //   final pickedFile = await picker.pickImage(source: source);
+
+    //   if(pickedFile != null){
+    //     final file = AWSFile.fromPath(pickedFile.path);
+
+    //     try{
+    //       final result = await Amplify.Storage.uploadFile(
+    //         localFile: file, 
+    //         key: 'photos/${DateTime.now().millisecondsSinceEpoch}.jpg',
+    //         );
+    //         print("Uploaded: ");
+    //     } catch (e) {
+    //       print("Error $e");
+    //     };
+      
+    //   } else {
+    //     print("No img selected");
+    //   }
+    // }
+
+    
+    // Future<void> listFiles() async {
+    //   try{
+    //     final operation = Amplify.Storage.list();
+    //     final result = await operation.result;
+    //     for (var item in result.items){
+    //       safePrint('Found file: ${item.key}');
+    //     }
+    //   } catch (e){
+    //     safePrint('Error loading files $e');
+    //   }
+    // }
 
   @override
   Widget build(BuildContext context){
@@ -117,12 +201,13 @@ class MapScreen extends StatefulWidget{
       initialCameraPosition:  CameraPosition(
         target: _currentLatLng!,
         zoom: 15),
+    markers: _markers,
     myLocationEnabled: true,
     myLocationButtonEnabled: false,
     ),
     floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     floatingActionButton: FloatingActionButton(
-      onPressed: ()=> pickImage(ImageSource.camera),
+      onPressed: ()=> createPinWithPhoto(ImageSource.camera),
       child: Icon(Icons.camera_alt),
       backgroundColor: Colors.deepPurple,
       foregroundColor:  Colors.white,
