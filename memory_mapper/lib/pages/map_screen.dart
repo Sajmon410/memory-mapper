@@ -25,11 +25,19 @@ class MapScreen extends StatefulWidget{
   @override
   void initState() {
     super.initState();
+    _checkUser();
     _getCurrentLocation();
     _getCurrentUser();
     _loadPins();
   }
-
+  Future<void> _checkUser()async {
+    try{
+      final user = await Amplify.Auth.getCurrentUser();
+      safePrint('Current user: ${user.username}');
+    } catch (e) {
+      safePrint('Error fetching current user: $e');
+    }
+  }
   Future<void> _getCurrentLocation() async {
     final locData = await location.getLocation();
     setState(() {
@@ -140,11 +148,13 @@ class MapScreen extends StatefulWidget{
           'lat': _currentLatLng!.latitude,
           'lng': _currentLatLng!.longitude,
           's3Key': key,
-          'createdAt': DateTime.now().toIso8601String(),
+          'createdAt': DateTime.now().toIso8601String().split('.').first + "Z",
         }
       },
     );
-    await Amplify.API.mutate(request: request).response;
+    final resp = await Amplify.API.mutate(request: request).response;
+    safePrint("🚀 Mutation result data: ${resp.data}"); 
+    safePrint("🚀 Mutation result errors: ${resp.errors}");
     setState((){
       _markers.add(
         Marker(
