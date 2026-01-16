@@ -164,7 +164,7 @@ class MapScreen extends StatefulWidget{
           ));
     });
     // Refresh pins
-    await _loadPins();
+    // await _loadPins();
   }
 
   @override
