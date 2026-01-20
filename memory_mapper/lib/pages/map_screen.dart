@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'package:custom_info_window/custom_info_window.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:custom_info_window/custom_info_window.dart';
 
 class MapScreen extends StatefulWidget{
   const MapScreen({super.key});
@@ -21,6 +23,8 @@ class MapScreen extends StatefulWidget{
   String? _userName;
   File? image;
   final picker = ImagePicker();
+  final CustomInfoWindowController _customInfoWindowController =
+      CustomInfoWindowController();
 
   @override
   void initState() {
@@ -92,7 +96,6 @@ class MapScreen extends StatefulWidget{
     );
 
     final resp = await Amplify.API.query(request: request).response;
-    safePrint("🚀 Mutation raw response: $resp"); safePrint("🚀 Mutation data: ${resp.data}"); safePrint("🚀 Mutation errors: ${resp.errors}");
 
     if (resp.data != null) {
       final Map<String, dynamic> data = jsonDecode(resp.data!);
@@ -104,7 +107,7 @@ class MapScreen extends StatefulWidget{
             markerId: MarkerId(p['id']),
             position: LatLng(p['lat'], p['lng']),
             infoWindow: InfoWindow(
-              title: 'Photo Pin',
+              title: 'Balksanska Fotografija',
               snippet: p['createdAt'],
               onTap: () async {
                 try {
@@ -160,21 +163,55 @@ class MapScreen extends StatefulWidget{
         Marker(
           markerId: MarkerId(key),
           position: _currentLatLng!,
-          infoWindow: InfoWindow(
-            title: 'Photo Pin',
-            snippet: DateTime.now().toIso8601String(),
-            onTap: () async {
-              final urlResult = await Amplify.Storage.getUrl(key: key).result;
-              showModalBottomSheet(
-                context: context,
-                builder: (_) => Image.network(urlResult.url.toString()),
-              );
-            }
+          onTap: () => _showInfoWindow(key, _currentLatLng!), 
+          // infoWindow: InfoWindow(
+          //   title: 'Photo Pin',
+          //   snippet: DateTime.now().toIso8601String(),
+            // onTap: () async {
+            //   final urlResult = await Amplify.Storage.getUrl(key: key).result;
+            //   showModalBottomSheet(
+            //     context: context,
+            //     builder: (_) => Image.network(urlResult.url.toString()),
+            //   );
+            // }
           ) 
-          ));
-    });
+          // ));
+    );
     // Refresh pins
     // await _loadPins();
+  });
+  }
+
+  void _showInfoWindow(String s3Key , LatLng position){
+
+    _customInfoWindowController.addInfoWindow!(
+      Container(
+        width: 200,
+        height: 100,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.blueAccent),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          children: [
+            const Text('Balkanska Fotografija', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () async {
+                final urlResult = await Amplify.Storage.getUrl(key: s3Key).result;
+                showModalBottomSheet(
+                  context: context,
+                  builder: (_) => Image.network(urlResult.url.toString()),
+                );   
+              },
+              child: const Text('View Photo'),
+            ),
+          ],
+        ),
+      ),
+      position,
+    );
   }
 
   @override
@@ -197,7 +234,15 @@ class MapScreen extends StatefulWidget{
       ),
       body: _currentLatLng == null
           ? const Center(child: CircularProgressIndicator())
-          : GoogleMap(
+          : Stack( children:[
+          GoogleMap(
+            onTap: (position){
+              _customInfoWindowController.hideInfoWindow!();
+            },
+            onMapCreated: (GoogleMapController controller){
+              _customInfoWindowController.googleMapController = controller;
+              _mapController = controller;
+            },
               initialCameraPosition: CameraPosition(
                 target: _currentLatLng!,
                 zoom: 15,
@@ -206,6 +251,13 @@ class MapScreen extends StatefulWidget{
               myLocationEnabled: true,
               myLocationButtonEnabled: false,
             ),
+            CustomInfoWindow(
+            controller: _customInfoWindowController,
+            height: 100,
+            width: 200,
+            offset: 50,
+            ),
+            ]) ,
       floatingActionButtonLocation:
           FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(

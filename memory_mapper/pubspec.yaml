@@ -45,6 +45,7 @@ dependencies:
   flutter_dotenv: ^5.1.0
   location: ^8.0.1
   image_picker: ^1.2.1
+  custom_info_window: ^1.0.1
 
 dev_dependencies:
   flutter_test:
