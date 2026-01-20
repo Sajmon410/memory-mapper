@@ -106,23 +106,7 @@ class MapScreen extends StatefulWidget{
           return Marker(
             markerId: MarkerId(p['id']),
             position: LatLng(p['lat'], p['lng']),
-            infoWindow: InfoWindow(
-              title: 'Balksanska Fotografija',
-              snippet: p['createdAt'],
-              onTap: () async {
-                try {
-                  final urlResult =
-                      await Amplify.Storage.getUrl(key: p['s3Key']).result;
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (_) =>
-                        Image.network(urlResult.url.toString()),
-                  );
-                } catch (e) {
-                  print("Error fetching image URL: $e");
-                }
-              },
-            ),
+            onTap: () => _showInfoWindow(p['s3Key'], LatLng(p['lat'], p['lng'])),
           );
         }).toSet();
       });
@@ -186,17 +170,26 @@ class MapScreen extends StatefulWidget{
 
     _customInfoWindowController.addInfoWindow!(
       Container(
-        width: 200,
-        height: 100,
+        width: 220,
+        height: 300,
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(color: Colors.blueAccent),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           children: [
             const Text('Balkanska Fotografija', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                urlResult.url.toString(),
+                width: 70,
+                height: 200,
+                fit: BoxFit.cover,
+              ),
+            ),
             ElevatedButton(
               onPressed: () async {
                 final urlResult = await Amplify.Storage.getUrl(key: s3Key).result;
