@@ -105,7 +105,7 @@ class MapScreen extends StatefulWidget{
           return Marker(
             markerId: MarkerId(p['id']),
             position: LatLng(p['lat'], p['lng']),
-            onTap: () => _showInfoWindow(p['s3Key'], LatLng(p['lat'], p['lng']), p['createdAt']),
+            onTap: () => _showInfoWindow(p['id'], p['s3Key'], LatLng(p['lat'], p['lng']), p['createdAt']),
           );
         }).toSet();
       });
@@ -119,8 +119,11 @@ class MapScreen extends StatefulWidget{
     final file = AWSFile.fromPath(pickedFile.path);
     final key = 'photos/${DateTime.now().millisecondsSinceEpoch}.jpg';
 
+    try {
     // Upload
     await Amplify.Storage.uploadFile(localFile: file, key: key);
+
+    final String timestamp = "${DateTime.now().toIso8601String().split('.').first}Z";
 
     // Mutation
     final request = GraphQLRequest<String>(
@@ -134,35 +137,21 @@ class MapScreen extends StatefulWidget{
           'lat': _currentLatLng!.latitude,
           'lng': _currentLatLng!.longitude,
           's3Key': key,
-          'createdAt': DateTime.now().toIso8601String().split('.').first + "Z",
+          'createdAt': timestamp,
         }
       },
     );
     final resp = await Amplify.API.mutate(request: request).response;
-    final now = DateTime.now().toIso8601String();
-    setState((){
-      _markers.add(
-        Marker(
-          markerId: MarkerId(key),
-          position: _currentLatLng!,
-          onTap: () => _showInfoWindow(key, _currentLatLng!,now), 
-          // infoWindow: InfoWindow(
-          //   title: 'Photo Pin',
-          //   snippet: DateTime.now().toIso8601String(),
-            // onTap: () async {
-            //   final urlResult = await Amplify.Storage.getUrl(key: key).result;
-            //   showModalBottomSheet(
-            //     context: context,
-            //     builder: (_) => Image.network(urlResult.url.toString()),
-            //   );
-            // }
-          ) 
-          // ));
-    );
-    // Refresh pins
-    // await _loadPins();
-  });
-  }
+  
+     if(resp.data!=null){
+       await _loadPins();
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pin created successfully!')),
+      );
+     }
+    } catch (e) {
+      safePrint('Error creating pin: $e');
+  }}
 
   Future<void> deletePin(String id, String s3Key) async {
     try{
@@ -196,7 +185,7 @@ class MapScreen extends StatefulWidget{
     }
   }
 
-  Future<void> _showInfoWindow(String s3Key , LatLng position, String dateTime) async {
+  Future<void> _showInfoWindow(String dbId,String s3Key , LatLng position, String dateTime) async {
     String formattedTime = dateTime.split('.').first.replaceAll(RegExp(r'[TZ]'), ' ');
 
     final urlResult= await Amplify.Storage.getUrl(key: s3Key).result;
@@ -262,7 +251,7 @@ class MapScreen extends StatefulWidget{
              IconButton(
               icon: const Icon(Icons.delete_outline, color: Color.fromARGB(255, 235, 121, 113), size: 20),
               onPressed: () {
-                deletePin(s3Key, s3Key);
+                deletePin(dbId, s3Key);
               },
             ),
             ],
