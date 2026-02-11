@@ -246,10 +246,9 @@ class MapScreen extends StatefulWidget{
             ),
 
               ),
-            const SizedBox(height: 5),
-            SizedBox(
-              height: 30,
-              child:   ElevatedButton(
+            Row(children: [
+              Expanded(child: SizedBox(height: 30, child: 
+              ElevatedButton(
               onPressed: () async {
                 final urlResult = await Amplify.Storage.getUrl(key: s3Key).result;
                 showModalBottomSheet(
@@ -258,12 +257,18 @@ class MapScreen extends StatefulWidget{
                 );   
               },
               child: const Text('View Photo'),
-            )
-          ),
-          ],
+            ),),),
+            const SizedBox(width: 5),
+             IconButton(
+              icon: const Icon(Icons.delete_outline, color: Color.fromARGB(255, 235, 121, 113), size: 20),
+              onPressed: () {
+                deletePin(s3Key, s3Key);
+              },
+            ),
+            ],
         ),
-      ),
-      ),
+      ]),
+      ),),
       position,
     );
   }
