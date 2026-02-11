@@ -8,7 +8,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:location/location.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:custom_info_window/custom_info_window.dart';
 
 class MapScreen extends StatefulWidget{
   const MapScreen({super.key});
@@ -163,6 +162,38 @@ class MapScreen extends StatefulWidget{
     // Refresh pins
     // await _loadPins();
   });
+  }
+
+  Future<void> deletePin(String id, String s3Key) async {
+    try{
+      final request = GraphQLRequest<String>(
+        document: '''
+          mutation DeletePin(\$input: DeletePinInput!) {
+          deletePin(input: \$input) { id }
+        }
+      ''',
+      variables: {
+        'input': {'id': id}
+      },
+      );
+
+      final response = await Amplify.API.mutate(request: request).response;
+      if(response.hasErrors){
+        safePrint('Greska pri brisanju iz baze: ${response.errors}');
+        return;
+      }
+      Amplify.Storage.remove(key: s3Key);
+      setState((){
+        _markers.removeWhere((m) => m.markerId.value == id);
+      });
+      _customInfoWindowController.hideInfoWindow!();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pin deleted successfully!')),
+      );
+    } catch (e) {
+      safePrint('Error deleting pin: $e');
+    }
   }
 
   Future<void> _showInfoWindow(String s3Key , LatLng position, String dateTime) async {
