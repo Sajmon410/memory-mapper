@@ -106,7 +106,7 @@ class MapScreen extends StatefulWidget{
           return Marker(
             markerId: MarkerId(p['id']),
             position: LatLng(p['lat'], p['lng']),
-            onTap: () => _showInfoWindow(p['s3Key'], LatLng(p['lat'], p['lng'])),
+            onTap: () => _showInfoWindow(p['s3Key'], LatLng(p['lat'], p['lng']), p['createdAt']),
           );
         }).toSet();
       });
@@ -140,14 +140,13 @@ class MapScreen extends StatefulWidget{
       },
     );
     final resp = await Amplify.API.mutate(request: request).response;
-    safePrint("🚀 Mutation result data: ${resp.data}"); 
-    safePrint("🚀 Mutation result errors: ${resp.errors}");
+    final now = DateTime.now().toIso8601String();
     setState((){
       _markers.add(
         Marker(
           markerId: MarkerId(key),
           position: _currentLatLng!,
-          onTap: () => _showInfoWindow(key, _currentLatLng!), 
+          onTap: () => _showInfoWindow(key, _currentLatLng!,now), 
           // infoWindow: InfoWindow(
           //   title: 'Photo Pin',
           //   snippet: DateTime.now().toIso8601String(),
@@ -166,31 +165,60 @@ class MapScreen extends StatefulWidget{
   });
   }
 
-  void _showInfoWindow(String s3Key , LatLng position){
+  Future<void> _showInfoWindow(String s3Key , LatLng position, String dateTime) async {
+    String formattedTime = dateTime.split('.').first.replaceAll(RegExp(r'[TZ]'), ' ');
+
+    final urlResult= await Amplify.Storage.getUrl(key: s3Key).result;
+    final imageUrl = urlResult.url.toString();
 
     _customInfoWindowController.addInfoWindow!(
       Container(
-        width: 220,
-        height: 300,
+        width: 200,
+        height: 280,
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border.all(color: Colors.blueAccent),
+          border: Border.all(color: Colors.deepPurple),
           borderRadius: BorderRadius.circular(12),
         ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Text('Balkanska Fotografija', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(formattedTime, style: const TextStyle(fontSize: 10)),
             const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+            Expanded(
+              child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
               child: Image.network(
-                urlResult.url.toString(),
-                width: 70,
-                height: 200,
-                fit: BoxFit.cover,
+              imageUrl, 
+              width: double.infinity,
+              fit: BoxFit.cover,
+              
+              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                if (loadingProgress == null) {
+                  return child;
+                }
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                        : null,
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(child: Icon(Icons.error, color: Colors.red));
+              },
               ),
             ),
-            ElevatedButton(
+
+              ),
+            const SizedBox(height: 5),
+            SizedBox(
+              height: 30,
+              child:   ElevatedButton(
               onPressed: () async {
                 final urlResult = await Amplify.Storage.getUrl(key: s3Key).result;
                 showModalBottomSheet(
@@ -199,9 +227,11 @@ class MapScreen extends StatefulWidget{
                 );   
               },
               child: const Text('View Photo'),
-            ),
+            )
+          ),
           ],
         ),
+      ),
       ),
       position,
     );
@@ -246,7 +276,7 @@ class MapScreen extends StatefulWidget{
             ),
             CustomInfoWindow(
             controller: _customInfoWindowController,
-            height: 100,
+            height: 280,
             width: 200,
             offset: 50,
             ),
