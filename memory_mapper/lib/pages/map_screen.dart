@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:custom_info_window/custom_info_window.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -239,13 +240,67 @@ class MapScreen extends StatefulWidget{
               Expanded(child: SizedBox(height: 30, child: 
               ElevatedButton(
               onPressed: () async {
-                final urlResult = await Amplify.Storage.getUrl(key: s3Key).result;
-                showModalBottomSheet(
-                  context: context,
-                  builder: (_) => Image.network(urlResult.url.toString()),
-                );   
+               showGeneralDialog(
+              context: context,
+              barrierDismissible: true,
+              barrierLabel: '',
+              barrierColor: Colors.black.withOpacity(0.85), 
+              transitionDuration: const Duration(milliseconds: 300),
+              pageBuilder: (context, anim1, anim2) {
+                return GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Scaffold(
+                    backgroundColor: Colors.transparent,
+                    body: Stack(
+                      children: [
+                        Center(
+                          child: InteractiveViewer( 
+                            child: Container(
+                              margin: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.5),
+                                    blurRadius: 20,
+                                    spreadRadius: 5,
+                                  )
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 40,
+                          right: 20,
+                          child: IconButton(
+                            icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               },
-              child: const Text('View Photo'),
+              transitionBuilder: (context, anim1, anim2, child) {
+                return ScaleTransition(
+                  scale: Tween<double>(begin: 0.7, end: 1.0).animate(
+                    CurvedAnimation(parent: anim1, curve: Curves.easeOutBack),
+                  ),
+                  child: FadeTransition(opacity: anim1, child: child),
+                );
+              },
+            );
+          },
+          child: const Text('View Photo', style: TextStyle(fontSize: 12)),
             ),),),
             const SizedBox(width: 5),
              IconButton(
